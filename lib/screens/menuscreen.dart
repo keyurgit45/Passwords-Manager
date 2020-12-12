@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:passmanager/screens/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dbhelper.dart';
 import 'dart:io';
@@ -39,8 +42,9 @@ class _MenupageState extends State<Menupage> {
     final id = await dbhelper.insert(row);
     print(id);
     setState(() {});
-
   }
+
+  
 
 
   Future<void> queryall() async {
@@ -142,7 +146,7 @@ class _MenupageState extends State<Menupage> {
                           onPressed: () {
                             if (formstate.currentState.validate()) {
                               // print("Ready To Enter Data");
-                             
+
                               insertdata();
                             }
                           },
@@ -208,6 +212,34 @@ class _MenupageState extends State<Menupage> {
                 },
               ),
             ),
+            Padding(
+              child: InkWell(
+                child: Icon(Icons.logout, color: Colors.black),
+                onTap: () async {
+                  SharedPreferences sharedPreferences =
+                      await SharedPreferences.getInstance();
+                  sharedPreferences.clear();
+                  // ignore: deprecated_member_use
+                  sharedPreferences.commit();
+                  // ignore: deprecated_member_use
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      // ignore: deprecated_member_use
+                      .getDocuments()
+                      .then((snapshot) {
+                    // ignore: deprecated_member_use
+                    for (DocumentSnapshot ds in snapshot.documents) {
+                      ds.reference.delete();
+                    }
+                  });
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => LoginPage()),
+                      (Route<dynamic> route) => false);
+                },
+              ),
+              padding: const EdgeInsets.fromLTRB(3, 18, 20, 18),
+            )
           ]),
       floatingActionButton: FloatingActionButton(
         onPressed: addpassword,
