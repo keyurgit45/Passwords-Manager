@@ -5,7 +5,6 @@ import 'package:passmanager/screens/fingerprint.dart';
 import 'package:passmanager/screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/introscreen.dart';
-
 import 'screens/menuscreen.dart';
 import 'screens/create.dart';
 
@@ -24,34 +23,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  void initState() {
-    super.initState();
-    // initfirebase();
-    checkLoginStatus();
-  }
-
-  // initfirebase() async{
-  // await Firebase.initializeApp().whenComplete(() {
-  //       print("completed");
-  //       setState(() {});
-  //     });
-  // }
-
-  checkLoginStatus() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-
-    if (sharedPreferences.getString("token") == null) {
-      Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (BuildContext context) => LoginPage()),
-          (Route<dynamic> route) => false);
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: MainPage(),
+    
       routes: {
         '/menu': (_) => Menupage(),
         '/auth': (_) => Fingerprintauth(),
@@ -59,5 +38,41 @@ class _MyAppState extends State<MyApp> {
         '/create': (_) => Createpass()
       },
     );
+  }
+}
+
+// ignore: camel_case_types
+class MainPage extends StatefulWidget {  
+  @override
+  _MainPageState createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+void initState() {
+    super.initState();
+    // initfirebase();
+    checkLoginStatus();
+  }
+
+  checkLoginStatus() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+   
+    if (sharedPreferences.getString("token") == null) {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (BuildContext context) => LoginPage()),
+          (Route<dynamic> route) => false);
+          print('pushing login page');
+    }
+
+  //   Navigator.push(
+  //   context,
+  //   MaterialPageRoute(builder: (context) => HomePage()),
+  // );
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return HomePage();
   }
 }

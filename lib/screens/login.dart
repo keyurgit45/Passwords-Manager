@@ -1,11 +1,14 @@
+
+
+import 'dart:io';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:device_info/device_info.dart';
 import 'package:passmanager/screens/introscreen.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,68 +16,57 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  
-  final _firestore = FirebaseFirestore.instance;
+  final _scaffoldKey = GlobalKey<ScaffoldState>(); 
   bool _isLoading = false;
   String email;
- 
-
-
+  int uniqueid = Random().nextInt(220);
+  
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
         .copyWith(statusBarColor: Colors.transparent));
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Colors.blue, Colors.teal],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter),
+    return Scaffold(key: _scaffoldKey,
+      body: Center(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+                colors: [Colors.blue, Colors.teal],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter),
+          ),
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : ListView(
+                  children: <Widget>[
+                    headerSection(),
+                    textSection(),
+                    buttonSection(),
+                  ],
+                ),
         ),
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : ListView(
-                children: <Widget>[
-                  headerSection(),
-                  textSection(),
-                  buttonSection(),
-                ],
-              ),
       ),
     );
   }
 
+  snackbar(){
+    final snackBar =SnackBar(content: Text('Please Enter a Valid Email and Password.'));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
+
   signIn(String email, pass) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    
-        FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: pass)
-            .then((signInUser) => {
-                  _firestore
-                      .collection('users')
-                  .add({'Email': email, 'Password': pass})
-                  .then((value) => {
-                        if (signInUser != null)
-                          {
-                            setState(() {
-                              _isLoading = false;
-                            }),
-                            sharedPreferences.setString("token", "value"),
-                            Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        HomePage()),
-                                (Route<dynamic> route) => false)
-                          }
-                      })
-                  .catchError((e) {
-                    print(e);
-                  })
-                  .catchError((e) {
-                    print(e);
-                  })
-            });
+
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+  print('$uniqueid');
+    users
+        .doc('$uniqueid')
+        .set({'Email': email, 'Password': pass})
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
+    sharedPreferences.setString("token", "value");
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (BuildContext context) => HomePage()),
+        (Route<dynamic> route) => false);
   }
 
   Container buttonSection() {
@@ -85,18 +77,20 @@ class _LoginPageState extends State<LoginPage> {
       margin: EdgeInsets.only(top: 15.0),
       child: RaisedButton(
         onPressed: emailController.text == "" || passwordController.text == ""
-            ? null
-            : () {print("Button clicked");
-            
+            ? snackbar
+            : () {
+                print("Button clicked");
+                writeCounter(uniqueid);
                 setState(() {
                   _isLoading = true;
                 });
-                signIn(emailController.text.toString().trim(), passwordController.text.toString().trim());
+                signIn(emailController.text.toString().trim(),
+                    passwordController.text.toString().trim());
                 email = emailController.text;
               },
         elevation: 0.0,
-        color: Colors.purple,
-        child: Text("Sign In", style: TextStyle(color: Colors.white70)),
+        color: Colors.lightGreen,
+        child: Text("Sign In", style: TextStyle(color: Colors.white)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       ),
     );
@@ -144,8 +138,8 @@ class _LoginPageState extends State<LoginPage> {
   Container headerSection() {
     return Container(
       margin: EdgeInsets.only(top: 50.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      child: Text("Code Land",
+      padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 25.0),
+      child: Text("Password Manager",
           style: TextStyle(
               color: Colors.white70,
               fontSize: 40.0,
@@ -153,3 +147,21 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/counter.txt');
+  }
+
+  Future<File> writeCounter(int uniqueid) async {
+    final file = await _localFile;
+
+    // Write the file
+    return file.writeAsString('$uniqueid');
+  }

@@ -15,6 +15,8 @@ class Menupage extends StatefulWidget {
 }
 
 class _MenupageState extends State<Menupage> {
+  LoginPage obj = LoginPage();
+
   String validateempty(_val) {
     if (_val.isEmpty) {
       return "Required Field";
@@ -23,13 +25,47 @@ class _MenupageState extends State<Menupage> {
     }
   }
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> formstate = GlobalKey<FormState>();
   final dbhelper = Databasehelper.instance;
   String type;
   String user;
   String pass;
   var allrows = [];
+  String collectionname = 'ABC123';
+  String contents;
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/counter.txt');
+  }
+
+  readCounter() async {
+    try {
+      final file = await _localFile;
+
+      // Read the file
+      contents = await file.readAsString();
+      print(contents);
+      return '$contents';
+    } catch (e) {
+      // If encountering an error, return 0
+      return 0;
+    }
+  }
+
+  @override
+  void initState() {
+    readCounter();
+    //  uniqueid = readCounter();
+    super.initState();
+  }
 
   void insertdata() async {
     Navigator.pop(context);
@@ -44,8 +80,17 @@ class _MenupageState extends State<Menupage> {
     setState(() {});
   }
 
-  
+  deletealldata() async {
+    Directory documentdirecoty = await getApplicationDocumentsDirectory();
+    String path = (documentdirecoty.path + "/x28ffdh.db");
+    // print(path);
+    await deleteDatabase(path);
+  }
 
+  // snackbar(msg) {
+  //   final snackBar = SnackBar(content: Text(msg));
+  //   _scaffoldKey.currentState.showSnackBar(snackBar);
+  // }
 
   Future<void> queryall() async {
     allrows = await dbhelper.queryall();
@@ -173,6 +218,7 @@ class _MenupageState extends State<Menupage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          key: _scaffoldKey,
           centerTitle: false,
           title: Text("All Entries",
               style: GoogleFonts.philosopher(
@@ -194,13 +240,8 @@ class _MenupageState extends State<Menupage> {
                           "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
                       actions: <Widget>[
                         FlatButton(
-                          onPressed: () async {
-                            Directory documentdirecoty =
-                                await getApplicationDocumentsDirectory();
-                            String path =
-                                (documentdirecoty.path + "/x28ffdh.db");
-                            // print(path);
-                            await deleteDatabase(path);
+                          onPressed: () {
+                            deletealldata();
                             Navigator.of(ctx).pop();
                             SystemNavigator.pop();
                           },
@@ -216,26 +257,45 @@ class _MenupageState extends State<Menupage> {
               child: InkWell(
                 child: Icon(Icons.logout, color: Colors.black),
                 onTap: () async {
-                  SharedPreferences sharedPreferences =
-                      await SharedPreferences.getInstance();
-                  sharedPreferences.clear();
-                  // ignore: deprecated_member_use
-                  sharedPreferences.commit();
-                  // ignore: deprecated_member_use
-                  await FirebaseFirestore.instance
-                      .collection('users')
-                      // ignore: deprecated_member_use
-                      .getDocuments()
-                      .then((snapshot) {
-                    // ignore: deprecated_member_use
-                    for (DocumentSnapshot ds in snapshot.documents) {
-                      ds.reference.delete();
-                    }
-                  });
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => LoginPage()),
-                      (Route<dynamic> route) => false);
+                  return showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text("LogOut ?"),
+                      // content: Text(
+                      //     "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
+                      actions: <Widget>[
+                        FlatButton(
+                          onPressed: () async {
+                            SharedPreferences sharedPreferences =
+                                await SharedPreferences.getInstance();
+                            sharedPreferences.clear();
+                            // ignore: deprecated_member_use
+                            sharedPreferences.commit();
+                            // ignore: deprecated_member_use
+
+                            print('$contents');
+                            CollectionReference users =
+                                FirebaseFirestore.instance.collection('users');
+                            print(
+                                "Data is going to delete with document $contents");
+                            users
+                                .doc('$contents')
+                                .delete()
+                                .then((value) => print("User Deleted"))
+                                .catchError((error) =>
+                                    print("Failed to delete user: $error"));
+                            await deletealldata();
+                            Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        LoginPage()),
+                                (Route<dynamic> route) => false);
+                          },
+                          child: Text("Confirm"),
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
               padding: const EdgeInsets.fromLTRB(3, 18, 20, 18),

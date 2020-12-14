@@ -1,21 +1,67 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:path_provider/path_provider.dart';
 // import 'package:passmanager/screens/login.dart';
 
 class HomePage extends StatefulWidget {
- 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>(); 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   String _masterpass;
   String masterpassword = "masterpass";
   bool _canCheckBiometrics = true;
   var localAuth = LocalAuthentication();
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  String contents;
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/counter.txt');
+  }
+
+  readCounter() async {
+    try {
+      final file = await _localFile;
+
+      // Read the file
+      contents = await file.readAsString();
+      print(contents);
+      return '$contents';
+    } catch (e) {
+      // If encountering an error, return 0
+      return 0;
+    }
+  }
+
+  getpass() async {
+    
+    String  docid =await readCounter();
+    users.doc(docid).get().then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        print('Document data: ${documentSnapshot.data()['Password']}');
+        masterpassword = '${documentSnapshot.data()['Password']}';
+        setState(() {
+          
+        });
+      } else {
+        print('Document does not exist on the database');
+      }
+    });
+    
+  }
 
   Future<void> checkbio() async {
     bool canCheckBiometrics;
@@ -29,7 +75,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-   
+  getpass();
     // checkbio();
   }
 
@@ -66,7 +112,6 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         _masterpass = value;
                         print(_masterpass);
-                        
                       });
                     },
                     obscureText: true,
@@ -90,8 +135,8 @@ class _HomePageState extends State<HomePage> {
                   textColor: Colors.white,
                   onPressed: () {
                     if (_masterpass != masterpassword) {
-                      final snackBar =
-                          SnackBar(content: Text('Please Enter Correct Password'));
+                      final snackBar = SnackBar(
+                          content: Text('Please Enter Correct Password'));
                       _scaffoldKey.currentState.showSnackBar(snackBar);
                     }
                     if (_masterpass == masterpassword) {
