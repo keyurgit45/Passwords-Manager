@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,7 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String _masterpass;
-  String masterpassword = "masterpass";
+  String masterpassword = "defaultpass";
   bool _canCheckBiometrics = true;
   var localAuth = LocalAuthentication();
   CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -42,25 +41,23 @@ class _HomePageState extends State<HomePage> {
       return '$contents';
     } catch (e) {
       // If encountering an error, return 0
-      return 0;
+      return '0';
     }
   }
 
   getpass() async {
-    
-    String  docid =await readCounter();
-    users.doc(docid).get().then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        print('Document data: ${documentSnapshot.data()['Password']}');
-        masterpassword = '${documentSnapshot.data()['Password']}';
-        setState(() {
-          
-        });
-      } else {
-        print('Document does not exist on the database');
-      }
-    });
-    
+    String docid = await readCounter();
+    if (docid != '0') {
+      users.doc(docid).get().then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists) {
+          print('Document data: ${documentSnapshot.data()['Password']}');
+          masterpassword = '${documentSnapshot.data()['Password']}';
+          setState(() {});
+        } else {
+          print('Document does not exist on the database');
+        }
+      });
+    }
   }
 
   Future<void> checkbio() async {
@@ -75,7 +72,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-  getpass();
+    getpass();
     // checkbio();
   }
 
@@ -97,7 +94,8 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 70),
-                Image.asset('lib/screens/download (1).png'),
+                Image.asset('lib/images/authentication.png'),
+
                 SizedBox(height: 30),
                 Text(
                   "Password Manager",
@@ -108,6 +106,13 @@ class _HomePageState extends State<HomePage> {
                   padding:
                       const EdgeInsets.symmetric(vertical: 3, horizontal: 25),
                   child: TextFormField(
+                    validator: (_val) {
+                      if (_val.isEmpty) {
+                        return "Required Field";
+                      } else {
+                        return null;
+                      }
+                    },
                     onChanged: (value) {
                       setState(() {
                         _masterpass = value;

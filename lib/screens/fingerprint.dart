@@ -54,7 +54,7 @@ class _FingerprintauthState extends State<Fingerprintauth> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // SizedBox(height: 32),
-              Image(image: AssetImage('lib/screens/download.png'), width: 121,height: 132,),
+              Image(image: AssetImage('lib/images/download.png'), width: 121,height: 132,),
               SizedBox(height: 30),
               Text(
                 "Fingerprint Authentication",style: TextStyle(fontSize: 24.0),

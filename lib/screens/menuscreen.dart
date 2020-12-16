@@ -191,7 +191,6 @@ class _MenupageState extends State<Menupage> {
                           onPressed: () {
                             if (formstate.currentState.validate()) {
                               // print("Ready To Enter Data");
-
                               insertdata();
                             }
                           },
@@ -218,19 +217,21 @@ class _MenupageState extends State<Menupage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          shadowColor: Colors.blue,
           key: _scaffoldKey,
           centerTitle: false,
+          elevation: 0.4,
           title: Text("All Entries",
-              style: GoogleFonts.philosopher(
+              style: GoogleFonts.roboto(
                   fontSize: 23,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w500)),
-          backgroundColor: Colors.white, //appbar color
+                  color: Colors.white,
+                  fontWeight: FontWeight.w400)),
+          backgroundColor: Colors.blue, //appbar color
           actions: [
             Padding(
               padding: const EdgeInsets.all(18.0),
               child: InkWell(
-                child: Icon(Icons.delete_outline, color: Colors.black),
+                child: Icon(Icons.delete_outline, color: Colors.white),
                 onTap: () {
                   return showDialog(
                     context: context,
@@ -255,14 +256,14 @@ class _MenupageState extends State<Menupage> {
             ),
             Padding(
               child: InkWell(
-                child: Icon(Icons.logout, color: Colors.black),
+                child: Icon(Icons.logout, color: Colors.white),
                 onTap: () async {
                   return showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
                       title: Text("LogOut ?"),
-                      // content: Text(
-                      //     "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
+                      content: Text(
+                          "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
                       actions: <Widget>[
                         FlatButton(
                           onPressed: () async {
@@ -272,7 +273,7 @@ class _MenupageState extends State<Menupage> {
                             // ignore: deprecated_member_use
                             sharedPreferences.commit();
                             // ignore: deprecated_member_use
-
+                                                   
                             print('$contents');
                             CollectionReference users =
                                 FirebaseFirestore.instance.collection('users');
@@ -298,7 +299,7 @@ class _MenupageState extends State<Menupage> {
                   );
                 },
               ),
-              padding: const EdgeInsets.fromLTRB(3, 18, 20, 18),
+              padding: const EdgeInsets.fromLTRB(3, 18, 18, 20),
             )
           ]),
       floatingActionButton: FloatingActionButton(
@@ -312,13 +313,22 @@ class _MenupageState extends State<Menupage> {
           if (snapshot.hasData != null) {
             if (allrows.length == 0) {
               return Center(
-                child: Text(
-                  "No Passwords Stored Yet !\nClick On The Add Button To Enter Some !\n\n\nTap the Field to Delete It",
-                  style: GoogleFonts.questrial(
-                      fontSize: 25,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.center,
+                child: Container(padding: EdgeInsets.all(23),decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          
+          color: Colors.grey[350],
+          ),
+                  // color: Colors.grey[350],
+                  width: MediaQuery.of(context).size.width*0.95,
+                  height: MediaQuery.of(context).size.width*0.58,
+                  child: Text(
+                    "No Passwords Stored Yet !\nClick On The Add Button To Enter Some !\n\n\nTap the Field to Delete It",
+                    style: GoogleFonts.questrial(
+                        fontSize: 25,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               );
             } else {
@@ -333,10 +343,10 @@ class _MenupageState extends State<Menupage> {
                         margin: EdgeInsets.only(
                           top: 10.0,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white, //color of box containing data
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),
+                          color: Colors.white10, //color of box containing data
                         ),
-                        width: MediaQuery.of(context).size.width * 1,
+                        width: MediaQuery.of(context).size.width * 0.9,
                         child: Column(
                           children: <Widget>[
                             Padding(
@@ -353,8 +363,8 @@ class _MenupageState extends State<Menupage> {
                             ),
                             ListTile(
                               leading: Icon(
-                                Icons.lock,
-                                size: 32.0,
+                                Icons.lock_rounded,
+                                size: 29.0,
                                 color: Colors.black87, //color of icon in box
                               ),
                               onTap: () {
