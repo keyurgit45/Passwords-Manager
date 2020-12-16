@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_string_encryption/flutter_string_encryption.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:passmanager/screens/introscreen.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   int uniqueid = Random().nextInt(220);
   String emailController;
   String passController;
+  String encrypted;
 
   String validateemail(_val) {
     if (_val.isEmpty) {
@@ -37,7 +39,60 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  
+  @override
+  void initState() {
+   encryptpass();
+    super.initState();
+  }
+
+  encryptpass() async{
+  PlatformStringCryptor cryptor = new PlatformStringCryptor();
+  // ignore: unused_local_variable
+  final password = "password123";
+final String salt = await cryptor.generateSalt();
+print(salt);
+// final String key = await cryptor.generateKeyFromPassword(password, salt);
+final key = "jIkj0VOLhFpOJSpI7SibjA==:RZ03+kGZ/9Di3PT0a3xUDibD6gmb2RIhTVF+mQfZqy0=";
+encrypted = await cryptor.encrypt("string.", key);
+setState((){ 
+});
+print(encrypted);
+writepass('$encrypted');
+print(':written successfully');
+// final decrypted = await cryptor.decrypt(encrypted, key);
+// print(decrypted);
+}
+
+
+Future<String> get _localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+
+  return directory.path;
+}
+
+Future<File> get _localFile async {
+  final path = await _localPath;
+  return File('$path/counter.txt');
+}
+
+Future<File> writeCounter(int uniqueid) async {
+  final file = await _localFile;
+  // Write the file
+  return file.writeAsString('$uniqueid');
+}
+Future<File> get _localpass async {
+  final path = await _localPath;
+  return File('$path/passdata.txt');
+}
+
+Future<File> writepass(String uniquepass) async {
+  final file = await _localpass;
+  // Write the file
+  return file.writeAsString(uniquepass);
+}
+
+
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
@@ -191,19 +246,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-Future<String> get _localPath async {
-  final directory = await getApplicationDocumentsDirectory();
 
-  return directory.path;
-}
-
-Future<File> get _localFile async {
-  final path = await _localPath;
-  return File('$path/counter.txt');
-}
-
-Future<File> writeCounter(int uniqueid) async {
-  final file = await _localFile;
-  // Write the file
-  return file.writeAsString('$uniqueid');
-}
+//
+//

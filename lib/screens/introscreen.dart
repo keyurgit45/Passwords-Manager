@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_string_encryption/flutter_string_encryption.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:passmanager/screens/dbhelper.dart';
@@ -33,6 +34,30 @@ class _HomePageState extends State<HomePage> {
   Future<File> get _localFile async {
     final path = await _localPath;
     return File('$path/counter.txt');
+  }
+
+  Future<File> get _localpass async {
+    final path = await _localPath;
+    return File('$path/passdata.txt');
+  }
+
+  readpass() async {
+    PlatformStringCryptor cryptor = new PlatformStringCryptor();
+    try {
+      final file = await _localpass;
+
+      // Read the file
+      contents = await file.readAsString();
+      print(contents);
+      final key =
+          "jIkj0VOLhFpOJSpI7SibjA==:RZ03+kGZ/9Di3PT0a3xUDibD6gmb2RIhTVF+mQfZqy0=";
+      final decrypted = await cryptor.decrypt(contents, key);
+      print(decrypted);
+      return '$contents';
+    } catch (e) {
+      // If encountering an error, return 0
+      return '0';
+    }
   }
 
   readCounter() async {
@@ -85,6 +110,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     getpass();
+    readpass();
     // checkbio();
   }
 
@@ -184,7 +210,9 @@ class _HomePageState extends State<HomePage> {
                       builder: (ctx) => AlertDialog(
                         title: Text("Logout ?"),
                         content: Text(
-                            "All your Passwords will be Deleted From the DataBase. As Master Password cannot be Recovered For Security Reasons." , textAlign: TextAlign.start,),
+                          "All your Passwords will be Deleted From the DataBase. As Master Password cannot be Recovered For Security Reasons.",
+                          textAlign: TextAlign.start,
+                        ),
                         actions: <Widget>[
                           FlatButton(
                             onPressed: () async {
