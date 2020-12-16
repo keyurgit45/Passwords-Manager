@@ -261,7 +261,7 @@ class _MenupageState extends State<Menupage> {
                   return showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: Text("LogOut ?"),
+                      title: Text("Logout ?"),
                       content: Text(
                           "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
                       actions: <Widget>[

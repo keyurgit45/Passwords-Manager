@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:passmanager/screens/introscreen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,8 +53,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           child: _isLoading
               ? Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                              child: ListView(
+              : ListView(
                     children: <Widget>[
                       SizedBox(height: 20),
                       Container(
@@ -70,17 +68,25 @@ class _LoginPageState extends State<LoginPage> {
                       headerSection(),
                       textSection(),
                       buttonSection(),
+                      SizedBox(height:14),
+                      Container(padding: EdgeInsets.all(19),
+                        child:
+                        Center(
+                          child: Text("Note : The master Password is the only password you need to remember . Memorize it , as it is not stored anywhere and can't be recovered",
+                          style: GoogleFonts.notoSerif(color:Colors.white , fontSize:14 , fontWeight: FontWeight.w200),
+                          textAlign: TextAlign.center,),
+                        )
+                      )
                     ],
                   ),
               ),
         ),
-      ),
-    );
+      );
+    
   }
 
   signIn(String email, pass) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     print('$uniqueid');
     users

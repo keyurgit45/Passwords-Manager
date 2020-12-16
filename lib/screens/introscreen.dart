@@ -4,8 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:passmanager/screens/dbhelper.dart';
+import 'package:passmanager/screens/login.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:passmanager/screens/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,6 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final dbhelper = Databasehelper.instance;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String _masterpass;
   String masterpassword = "defaultpass";
@@ -43,6 +47,14 @@ class _HomePageState extends State<HomePage> {
       // If encountering an error, return 0
       return '0';
     }
+  }
+
+  deletealldata() async {
+    Directory documentdirecoty = await getApplicationDocumentsDirectory();
+    String path = (documentdirecoty.path + "/x28ffdh.db");
+    print("called deletealldata fun in introscreen");
+    print(path);
+    await deleteDatabase(path);
   }
 
   getpass() async {
@@ -95,7 +107,6 @@ class _HomePageState extends State<HomePage> {
               children: [
                 SizedBox(height: 70),
                 Image.asset('lib/images/authentication.png'),
-
                 SizedBox(height: 30),
                 Text(
                   "Password Manager",
@@ -159,7 +170,57 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                 ),
-                // SizedBox(height : 190),
+                SizedBox(height: 20),
+                FlatButton(
+                  child: Text(
+                    'Forget Password?',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  color: Colors.blueAccent,
+                  textColor: Colors.white,
+                  onPressed: () async {
+                    return showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text("Logout ?"),
+                        content: Text(
+                            "All your Passwords will be Deleted From the DataBase. As Master Password cannot be Recovered For Security Reasons." , textAlign: TextAlign.start,),
+                        actions: <Widget>[
+                          FlatButton(
+                            onPressed: () async {
+                              SharedPreferences sharedPreferences =
+                                  await SharedPreferences.getInstance();
+                              sharedPreferences.clear();
+                              // ignore: deprecated_member_use
+                              sharedPreferences.commit();
+                              // ignore: deprecated_member_use
+
+                              print('$contents');
+                              CollectionReference users = FirebaseFirestore
+                                  .instance
+                                  .collection('users');
+                              print(
+                                  "Data is going to delete with document $contents");
+                              users
+                                  .doc('$contents')
+                                  .delete()
+                                  .then((value) => print("User Deleted"))
+                                  .catchError((error) =>
+                                      print("Failed to delete user: $error"));
+                              await deletealldata();
+                              Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          LoginPage()),
+                                  (Route<dynamic> route) => false);
+                            },
+                            child: Text("Confirm"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 200, 0, 0),
                   child: Center(
