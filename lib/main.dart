@@ -1,17 +1,13 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:passmanager/screens/create.dart';
 import 'package:passmanager/screens/fingerprint.dart';
 import 'package:passmanager/screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/introscreen.dart';
 import 'screens/menuscreen.dart';
-import 'screens/create.dart';
+
 
 // import 'screens/dbhelper.dart';
-void main() async {
-WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp();
+void main() {
 runApp(MyApp());
 }
 
@@ -35,7 +31,7 @@ class _MyAppState extends State<MyApp> {
         '/menu': (_) => Menupage(),
         '/auth': (_) => Fingerprintauth(),
         '/intro': (_) => HomePage(),
-        '/create': (_) => Createpass()
+    
       },
     );
   }
@@ -63,12 +59,6 @@ void initState() {
           (Route<dynamic> route) => false);
           print('pushing login page');
     }
-
-  //   Navigator.push(
-  //   context,
-  //   MaterialPageRoute(builder: (context) => HomePage()),
-  // );
-    
   }
 
   @override

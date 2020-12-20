@@ -1,8 +1,5 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_string_encryption/flutter_string_encryption.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:passmanager/screens/dbhelper.dart';
@@ -10,6 +7,7 @@ import 'package:passmanager/screens/login.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:xxtea/xxtea.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,17 +21,11 @@ class _HomePageState extends State<HomePage> {
   String masterpassword = "defaultpass";
   bool _canCheckBiometrics = true;
   var localAuth = LocalAuthentication();
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
   String contents;
+
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
-
     return directory.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/counter.txt');
   }
 
   Future<File> get _localpass async {
@@ -42,37 +34,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   readpass() async {
-    PlatformStringCryptor cryptor = new PlatformStringCryptor();
-    try {
-      final file = await _localpass;
-
-      // Read the file
-      contents = await file.readAsString();
-      print(contents);
-      final key =
-          "jIkj0VOLhFpOJSpI7SibjA==:RZ03+kGZ/9Di3PT0a3xUDibD6gmb2RIhTVF+mQfZqy0=";
-      final decrypted = await cryptor.decrypt(contents, key);
-      print(decrypted);
-      return '$contents';
-    } catch (e) {
-      // If encountering an error, return 0
-      return '0';
-    }
+    // String password = await readCounter();
+    String key = "1234jfbkjn567890";
+    String decryptData = xxtea.decryptToString(contents, key);
+    print(decryptData);
+    setState(() {
+      masterpassword = decryptData;
+    });
   }
 
   readCounter() async {
     try {
-      final file = await _localFile;
-
+      final file = await _localpass;
       // Read the file
       contents = await file.readAsString();
       print(contents);
-      return '$contents';
+      setState(() {
+        contents = contents;
+      });
+      readpass();
     } catch (e) {
       // If encountering an error, return 0
-      return '0';
+      print(e);
     }
   }
+
 
   deletealldata() async {
     Directory documentdirecoty = await getApplicationDocumentsDirectory();
@@ -80,21 +66,6 @@ class _HomePageState extends State<HomePage> {
     print("called deletealldata fun in introscreen");
     print(path);
     await deleteDatabase(path);
-  }
-
-  getpass() async {
-    String docid = await readCounter();
-    if (docid != '0') {
-      users.doc(docid).get().then((DocumentSnapshot documentSnapshot) {
-        if (documentSnapshot.exists) {
-          print('Document data: ${documentSnapshot.data()['Password']}');
-          masterpassword = '${documentSnapshot.data()['Password']}';
-          setState(() {});
-        } else {
-          print('Document does not exist on the database');
-        }
-      });
-    }
   }
 
   Future<void> checkbio() async {
@@ -108,10 +79,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    super.initState();
-    getpass();
-    readpass();
-    // checkbio();
+    readCounter();
+    super.initState();  
+    checkbio();
   }
 
   @override
@@ -127,7 +97,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          child: Column(
+        child :Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -196,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
                 FlatButton(
                   child: Text(
                     'Forget Password?',
@@ -222,19 +192,6 @@ class _HomePageState extends State<HomePage> {
                               // ignore: deprecated_member_use
                               sharedPreferences.commit();
                               // ignore: deprecated_member_use
-
-                              print('$contents');
-                              CollectionReference users = FirebaseFirestore
-                                  .instance
-                                  .collection('users');
-                              print(
-                                  "Data is going to delete with document $contents");
-                              users
-                                  .doc('$contents')
-                                  .delete()
-                                  .then((value) => print("User Deleted"))
-                                  .catchError((error) =>
-                                      print("Failed to delete user: $error"));
                               await deletealldata();
                               Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
@@ -250,17 +207,17 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 200, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 65, 0, 0),
                   child: Center(
                       child: Text(
-                    "Developed By Keyur.",
+                    "Developed by Keyur.",
                     style: GoogleFonts.inter(
                         color: Colors.blueAccent, fontSize: 9),
                   )),
                 )
               ]),
         ),
-      ),
+    ),
     );
   }
 }

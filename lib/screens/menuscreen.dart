@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,8 +14,6 @@ class Menupage extends StatefulWidget {
 }
 
 class _MenupageState extends State<Menupage> {
-  LoginPage obj = LoginPage();
-
   String validateempty(_val) {
     if (_val.isEmpty) {
       return "Required Field";
@@ -32,39 +29,16 @@ class _MenupageState extends State<Menupage> {
   String user;
   String pass;
   var allrows = [];
-  String collectionname = 'ABC123';
   String contents;
 
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
-
     return directory.path;
   }
 
-  Future<File> get _localFile async {
+  Future<File> get _localpass async {
     final path = await _localPath;
-    return File('$path/counter.txt');
-  }
-
-  readCounter() async {
-    try {
-      final file = await _localFile;
-
-      // Read the file
-      contents = await file.readAsString();
-      print(contents);
-      return '$contents';
-    } catch (e) {
-      // If encountering an error, return 0
-      return 0;
-    }
-  }
-
-  @override
-  void initState() {
-    readCounter();
-    //  uniqueid = readCounter();
-    super.initState();
+    return File('$path/passdata.txt');
   }
 
   void insertdata() async {
@@ -87,24 +61,14 @@ class _MenupageState extends State<Menupage> {
     await deleteDatabase(path);
   }
 
-  // snackbar(msg) {
-  //   final snackBar = SnackBar(content: Text(msg));
-  //   _scaffoldKey.currentState.showSnackBar(snackBar);
-  // }
-
   Future<void> queryall() async {
     allrows = await dbhelper.queryall();
-//     allrows.forEach((row) {
-//       print(row);
-//     });
-//     print(allrows );
-// print(allrows[0]["user"]);
+    //     allrows.forEach((row) {
+    //       print(row);
+    //     });
+    //     print(allrows );
+    // print(allrows[0]["user"]);
   }
-  // deletedata(int id) async {
-  //   Database db = await instance.databse;
-  //   var res = await db.delete(Databasehelper.table, where: "id = ?", whereArgs: [id]);
-  //   return res;
-  // }
 
   void addpassword() {
     showDialog(
@@ -263,7 +227,7 @@ class _MenupageState extends State<Menupage> {
                     builder: (ctx) => AlertDialog(
                       title: Text("Logout ?"),
                       content: Text(
-                          "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
+                          "All your Data will be Lost Since Master Password Can't Be Recovered. \nAre you Sure ?"),
                       actions: <Widget>[
                         FlatButton(
                           onPressed: () async {
@@ -273,18 +237,8 @@ class _MenupageState extends State<Menupage> {
                             // ignore: deprecated_member_use
                             sharedPreferences.commit();
                             // ignore: deprecated_member_use
-                                                   
-                            print('$contents');
-                            CollectionReference users =
-                                FirebaseFirestore.instance.collection('users');
-                            print(
-                                "Data is going to delete with document $contents");
-                            users
-                                .doc('$contents')
-                                .delete()
-                                .then((value) => print("User Deleted"))
-                                .catchError((error) =>
-                                    print("Failed to delete user: $error"));
+                            final file = await _localpass;
+                            file.delete();
                             await deletealldata();
                             Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
@@ -313,14 +267,15 @@ class _MenupageState extends State<Menupage> {
           if (snapshot.hasData != null) {
             if (allrows.length == 0) {
               return Center(
-                child: Container(padding: EdgeInsets.all(23),decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          
-          color: Colors.grey[350],
-          ),
+                child: Container(
+                  padding: EdgeInsets.all(23),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey[350],
+                  ),
                   // color: Colors.grey[350],
-                  width: MediaQuery.of(context).size.width*0.95,
-                  height: MediaQuery.of(context).size.width*0.58,
+                  width: MediaQuery.of(context).size.width * 0.95,
+                  height: MediaQuery.of(context).size.width * 0.58,
                   child: Text(
                     "No Passwords Stored Yet !\nClick On The Add Button To Enter Some !\n\n\nTap the Field to Delete It",
                     style: GoogleFonts.questrial(
@@ -343,7 +298,8 @@ class _MenupageState extends State<Menupage> {
                         margin: EdgeInsets.only(
                           top: 10.0,
                         ),
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
                           color: Colors.white10, //color of box containing data
                         ),
                         width: MediaQuery.of(context).size.width * 0.9,
@@ -372,8 +328,6 @@ class _MenupageState extends State<Menupage> {
                                   context: context,
                                   builder: (ctx) => AlertDialog(
                                     title: Text("Delete ?"),
-                                    // content: Text(
-                                    //     "All your Passwords will be Deleted From the DataBase. \nAre you Sure ?"),
                                     actions: <Widget>[
                                       FlatButton(
                                         onPressed: () async {
